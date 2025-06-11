@@ -1,13 +1,20 @@
 // In project: DroneSim.App
 using DroneSim.Core;
+using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using System.Numerics;
 
 namespace DroneSim.App;
 
-// THIS IS A SKELETON IMPLEMENTATION BASED ON DOCUMENTATION
-// It is NOT the full orchestrator logic.
+public class OrchestratorOptions
+{
+    public int AIDroneCount { get; set; } = 9;
+    public float CameraTiltSpeed { get; set; } = 1.5708f; // rad/s
+    public float MinCameraTilt { get; set; } = -0.7854f; // -45 deg
+    public float MaxCameraTilt { get; set; } = 0.3490f;  // +20 deg
+}
 
 public class Orchestrator : IFrameTickable, IRenderDataSource, IWorldDataSource
 {
@@ -17,17 +24,17 @@ public class Orchestrator : IFrameTickable, IRenderDataSource, IWorldDataSource
     private readonly IDebugDrawService _debugDraw;
     private readonly ITerrainGenerator _terrainGenerator;
     private readonly IAIDroneSpawner _aiSpawner;
+    private readonly OrchestratorOptions _options;
 
     private List<DroneAgent> _allDrones = new();
     private WorldData? _worldData;
     private bool _isDebugDrawingEnabled = false;
 
-    // --- State for IRenderDataSource ---
+    // State for IRenderDataSource
     private int _playerControlledDroneId = 0;
     private int _cameraAttachedToDroneId = 0;
     private CameraViewMode _cameraViewMode = CameraViewMode.OverTheShoulder;
     private float _cameraTilt = 0.0f;
-
 
     public Orchestrator(
         IPlayerInput playerInput,
@@ -35,43 +42,112 @@ public class Orchestrator : IFrameTickable, IRenderDataSource, IWorldDataSource
         IPhysicsService physicsService,
         IDebugDrawService debugDraw,
         ITerrainGenerator terrainGenerator,
-        IAIDroneSpawner aiSpawner)
+        IAIDroneSpawner aiSpawner,
+        IOptions<OrchestratorOptions> options)
     {
-        _playerInput = playerInput;
-        _flightModel = flightModel;
-        _physicsService = physicsService;
-        _debugDraw = debugDraw;
-        _terrainGenerator = terrainGenerator;
-        _aiSpawner = aiSpawner;
+        _playerInput = playerInput ?? throw new ArgumentNullException(nameof(playerInput));
+        _flightModel = flightModel ?? throw new ArgumentNullException(nameof(flightModel));
+        _physicsService = physicsService ?? throw new ArgumentNullException(nameof(physicsService));
+        _debugDraw = debugDraw ?? throw new ArgumentNullException(nameof(debugDraw));
+        _terrainGenerator = terrainGenerator ?? throw new ArgumentNullException(nameof(terrainGenerator));
+        _aiSpawner = aiSpawner ?? throw new ArgumentNullException(nameof(aiSpawner));
+        _options = options.Value;
 
-        // _physicsService.CollisionDetected += OnCollision;
+        _physicsService.CollisionDetected += OnCollision;
     }
 
     public void Setup()
     {
         _worldData = _terrainGenerator.Generate();
-        // _physicsService.AddStaticBody(_worldData.TerrainPhysicsBody);
-        
+        _physicsService.AddStaticBody(_worldData.TerrainPhysicsBody);
+
         // Create player drone
-        var playerState = new DroneState { Id = 0, Position = new System.Numerics.Vector3(0, 5, 0), Status = DroneStatus.Active };
-        var playerAgent = new DroneAgent(0, playerState, null!); // Null autopilot for player
+        var playerState = new DroneState { Id = 0, Position = new Vector3(0, 5, 0), Status = DroneStatus.Active };
+        int playerBodyHandle = _physicsService.AddKinematicBody(new { Shape = "Drone" });
+        var playerAgent = new DroneAgent(playerBodyHandle, playerState, null!); // No autopilot for player
         _allDrones.Add(playerAgent);
 
         // Create AI drones
-        // var aiAgents = _aiSpawner.CreateDrones(9, _worldData);
-        // _allDrones.AddRange(aiAgents);
+        var aiAgents = _aiSpawner.CreateDrones(_options.AIDroneCount, _worldData);
+        _allDrones.AddRange(aiAgents);
     }
 
     public void UpdateFrame(float deltaTime)
     {
-        // This is a minimal implementation to allow the program to run.
-        // A full implementation would poll input, update AI, step physics, etc.
+        // 1. Poll Input
+        _playerInput.Update(new object()); // In a real game, pass keyboard/gamepad state
+        HandleInput(deltaTime);
+
+        // 2. Update AI and Player Drone Controls
+        foreach (var agent in _allDrones)
+        {
+            if (agent.State.Status == DroneStatus.Crashed) continue;
+
+            ControlInputs inputs;
+            if (agent.State.Id == _playerControlledDroneId)
+            {
+                inputs = _playerInput.GetFlightControls();
+            }
+            else
+            {
+                inputs = agent.AutopilotController.GetControlUpdate(agent.State);
+            }
+
+            var moveIntent = _flightModel.GenerateMoveIntent(agent.State, inputs, deltaTime);
+            _physicsService.SubmitMoveIntent(agent.PhysicsBodyHandle, moveIntent);
+        }
+
+        // 3. Step Physics
+        _physicsService.Step(deltaTime);
+
+        // 4. Update Drone States from Physics
+        foreach (var agent in _allDrones)
+        {
+            if (agent.State.Status == DroneStatus.Crashed) continue;
+            var newState = _physicsService.GetState(agent.PhysicsBodyHandle);
+            // Preserve Id and Status from the orchestrator's agent object
+            newState.Id = agent.State.Id;
+            newState.Status = agent.State.Status;
+            agent.State = newState;
+        }
+
+        // 5. Update Debug Drawing
         _debugDraw.Tick(deltaTime);
+    }
+
+    private void HandleInput(float deltaTime)
+    {
+        if (_playerInput.IsDebugTogglePressed()) _isDebugDrawingEnabled = !_isDebugDrawingEnabled;
+        if (_playerInput.IsSwitchCameraPressed())
+        {
+            _cameraViewMode = _cameraViewMode == CameraViewMode.OverTheShoulder ?
+                CameraViewMode.FirstPerson : CameraViewMode.OverTheShoulder;
+        }
+
+        _cameraTilt += _playerInput.GetCameraTiltInput() * _options.CameraTiltSpeed * deltaTime;
+        _cameraTilt = Math.Clamp(_cameraTilt, _options.MinCameraTilt, _options.MaxCameraTilt);
+
+        if (_playerInput.IsSwitchDronePressed())
+        {
+            // This logic allows switching camera view to any active drone, including the player's
+            var activeDrones = _allDrones.Where(d => d.State.Status == DroneStatus.Active).ToList();
+            var currentIndex = activeDrones.FindIndex(d => d.State.Id == _cameraAttachedToDroneId);
+            var nextIndex = (currentIndex + 1) % activeDrones.Count;
+            _cameraAttachedToDroneId = activeDrones[nextIndex].State.Id;
+        }
+
+        // The "Possess" key is not implemented in V1
     }
 
     private void OnCollision(CollisionEventData eventData)
     {
-        // Find agents, set status to Crashed, draw debug sphere
+        // V1: Any collision is fatal. Find the agent and update its status.
+        var agent = _allDrones.FirstOrDefault(a => a.PhysicsBodyHandle == eventData.BodyAHandle || a.PhysicsBodyHandle == eventData.BodyBHandle);
+        if (agent != null)
+        {
+            agent.State = agent.State with { Status = DroneStatus.Crashed };
+            _debugDraw.DrawCollisionPoint(eventData.Position, 1f, System.Drawing.Color.Red, 5f);
+        }
     }
 
     // --- IRenderDataSource & IWorldDataSource Implementation ---
@@ -80,7 +156,13 @@ public class Orchestrator : IFrameTickable, IRenderDataSource, IWorldDataSource
     public int GetCameraAttachedToDroneId() => _cameraAttachedToDroneId;
     public CameraViewMode GetCameraViewMode() => _cameraViewMode;
     public float GetCameraTilt() => _cameraTilt;
-    public string GetHudInfo() => "HUD INFO PLACEHOLDER";
+    public string GetHudInfo()
+    {
+        var playerDrone = _allDrones.FirstOrDefault(d => d.State.Id == _playerControlledDroneId);
+        if (playerDrone == null) return "No Player Drone";
+
+        return $"Player Drone | Pos: {playerDrone.State.Position:F2} | Speed: 0.0 m/s"; // Speed not tracked in V1
+    }
     public bool IsDebugDrawingEnabled() => _isDebugDrawingEnabled;
     public WorldData GetWorldData() => _worldData!;
 } 

@@ -23,7 +23,7 @@ public class V2SimplePhysicsService : IPhysicsService
         public Vector3 Position;
         public Quaternion Orientation;
         public Vector3 LinearVelocity;
-        public Vector3 AngularVelocity; // Simplified for this implementation
+        public Vector3 AngularVelocity = Vector3.Zero;
         public List<Vector3> ForcesThisFrame = new();
         public List<Vector3> TorquesThisFrame = new();
     }
@@ -37,7 +37,7 @@ public class V2SimplePhysicsService : IPhysicsService
     /// as no actual collision detection is performed.
     /// </summary>
 #pragma warning disable 0067
-    public event Action<CollisionEventData> CollisionDetected;
+    public event Action<CollisionEventData>? CollisionDetected;
 #pragma warning restore 0067
 
     public V2SimplePhysicsService(IOptions<PhysicsOptions> options)

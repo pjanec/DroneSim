@@ -2,14 +2,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\DroneSim.Core.csproj" />
-    <ProjectReference Include="..\Modules\TerrainGenerator\DroneSim.TerrainGenerator.csproj" />
-    <ProjectReference Include="..\Modules\PlayerInput\DroneSim.PlayerInput.csproj" />
+    <ProjectReference Include="..\Modules\AIDroneSpawner\DroneSim.AISpawner.csproj" />
+    <ProjectReference Include="..\Modules\Autopilot\DroneSim.Autopilot.csproj" />
+    <ProjectReference Include="..\Modules\DebugDrawService\DroneSim.DebugDraw.csproj" />
     <ProjectReference Include="..\Modules\FlightDynamics\DroneSim.FlightDynamics.csproj" />
     <ProjectReference Include="..\Modules\PhysicsService\DroneSim.PhysicsService.csproj" />
-    <ProjectReference Include="..\Modules\Autopilot\DroneSim.Autopilot.csproj" />
-    <ProjectReference Include="..\Modules\AIDroneSpawner\DroneSim.AISpawner.csproj" />
-    <ProjectReference Include="..\Modules\Renderer\DroneSim.Renderer.csproj" />
-    <ProjectReference Include="..\Modules\DebugDrawService\DroneSim.DebugDraw.csproj" />
+    <ProjectReference Include="..\Modules\PlayerInput\DroneSim.PlayerInput.csproj" />
+    <ProjectReference Include="..\Modules\TerrainGenerator\DroneSim.TerrainGenerator.csproj" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -18,5 +17,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+  </ItemGroup>
 
 </Project>

@@ -163,3 +163,16 @@ private void OnCollision(CollisionEventData eventData)\
 public bool IsDebugDrawingEnabled() =\> \_isDebugDrawingEnabled;\
 // \... all other getter methods \...\
 }
+
+**5. Configuration & Parameters**
+
+The orchestrator is configured via an `OrchestratorOptions` class bound from `appsettings.json`.
+
+| Parameter | Default | Description |
+| :--- | ---: | :--- |
+| AIDroneCount | 9 | Number of AI-controlled drones spawned at startup. |
+| CameraTiltSpeed | 1.5708f | Camera tilt speed in radians per second. |
+| MinCameraTilt | -0.7854f | Minimum tilt angle in radians (-45°). |
+| MaxCameraTilt | 0.3490f | Maximum tilt angle in radians (+20°). |
+
+The `Orchestrator` implements both `IRenderDataSource` and `IWorldDataSource`. Modules like the renderer cast it to `IWorldDataSource` after `Setup()` completes to obtain terrain data for GPU initialization.

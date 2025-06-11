@@ -157,3 +157,13 @@ float GetCameraTilt();\
 string GetHudInfo();\
 bool IsDebugDrawingEnabled(); // NEW\
 }
+
+/// <summary>
+/// Provides access to the immutable <c>WorldData</c> generated during
+/// <see cref="IFrameTickable.Setup"/>. Implemented by the orchestrator so the
+/// renderer can obtain terrain information when initializing graphics resources.
+/// </summary>
+public interface IWorldDataSource
+{
+    WorldData GetWorldData();
+}

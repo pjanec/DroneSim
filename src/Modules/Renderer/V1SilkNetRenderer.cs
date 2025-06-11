@@ -17,6 +17,13 @@ using Silk.NET.Input;
 
 namespace DroneSim.Renderer;
 
+/// <summary>
+/// Silk.NET based renderer used in version 1 of the simulation. It pulls
+/// simulation data via <see cref="IRenderDataSource"/> and obtains the
+/// generated <see cref="WorldData"/> through <see cref="IWorldDataSource"/>.
+/// Responsible for creating the window, initializing OpenGL resources and
+/// drawing all simulation visuals each frame.
+/// </summary>
 public class V1SilkNetRenderer : IRenderer, IDisposable
 {
     private readonly IFrameTickable _tickable;
@@ -78,6 +85,10 @@ public class V1SilkNetRenderer : IRenderer, IDisposable
 
     public IKeyboard? PrimaryKeyboard => _inputContext?.Keyboards.FirstOrDefault();
 
+    /// <summary>
+    /// Creates the application window and starts the event loop. All
+    /// rendering callbacks are registered here.
+    /// </summary>
     public void Run()
     {
         var options = WindowOptions.Default;
@@ -94,6 +105,11 @@ public class V1SilkNetRenderer : IRenderer, IDisposable
         _window.Run();
     }
 
+    /// <summary>
+    /// Called by the window on startup. Creates the OpenGL context,
+    /// initializes shaders and GPU buffers and queries world data from
+    /// the orchestrator to build the terrain mesh.
+    /// </summary>
     private unsafe void OnLoad()
     {
         _gl = _window?.CreateOpenGL() ?? throw new InvalidOperationException("Could not create OpenGL context.");
@@ -125,6 +141,9 @@ public class V1SilkNetRenderer : IRenderer, IDisposable
         _gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
     }
 
+    /// <summary>
+    /// Uploads the terrain mesh to GPU buffers for rendering.
+    /// </summary>
     private unsafe void SetupTerrain(V1RenderMesh mesh)
     {
         if (_gl == null || !mesh.Vertices.Any()) return;
@@ -226,6 +245,11 @@ public class V1SilkNetRenderer : IRenderer, IDisposable
     
     private void OnUpdate(double deltaTime) => _tickable.UpdateFrame((float)deltaTime, PrimaryKeyboard);
 
+    /// <summary>
+    /// Rendering callback executed each frame. Pulls the latest simulation
+    /// state from <see cref="IRenderDataSource"/> and draws terrain, drones,
+    /// debug shapes and the HUD.
+    /// </summary>
     private unsafe void OnRender(double deltaTime)
     {
         if (_gl == null || _disposed) return;

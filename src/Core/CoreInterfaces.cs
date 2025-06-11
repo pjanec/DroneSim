@@ -209,9 +209,17 @@ namespace DroneSim.Core
     /// <summary>
     /// An extended data source interface for components that need access
     /// to the static world data after it has been generated.
+    /// Provides read-only access to the <see cref="WorldData"/> that is
+    /// created during <see cref="IFrameTickable.Setup"/>. The orchestrator
+    /// implements this interface so that modules like the renderer can
+    /// obtain terrain and navigation information once initialization is
+    /// complete.
     /// </summary>
     public interface IWorldDataSource
     {
+        /// <summary>
+        /// Returns the immutable world data generated at startup.
+        /// </summary>
         WorldData GetWorldData();
     }
 } 

@@ -15,8 +15,16 @@ using System;
 
 namespace DroneSim.App;
 
+/// <summary>
+/// Application entry point. Builds the host with all module services and
+/// starts the renderer which in turn drives the simulation loop.
+/// </summary>
 public static class Program
 {
+    /// <summary>
+    /// Entry method that configures dependency injection and starts the
+    /// rendering loop.
+    /// </summary>
     public static void Main(string[] args)
     {
         Console.WriteLine("DroneSim Application Starting...");
@@ -28,6 +36,9 @@ public static class Program
         Console.WriteLine("DroneSim Application Exiting.");
     }
 
+    /// <summary>
+    /// Sets up the generic host with configuration and all module services.
+    /// </summary>
     private static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
             .ConfigureAppConfiguration((context, config) =>

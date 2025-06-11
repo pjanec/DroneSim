@@ -9,6 +9,11 @@ using Silk.NET.Input;
 
 namespace DroneSim.App;
 
+/// <summary>
+/// Configuration values for the <see cref="Orchestrator"/>. These
+/// options are populated from <c>appsettings.json</c> and control
+/// how many AI drones are spawned as well as camera behaviour.
+/// </summary>
 public class OrchestratorOptions
 {
     public int AIDroneCount { get; set; } = 9;
@@ -17,6 +22,15 @@ public class OrchestratorOptions
     public float MaxCameraTilt { get; set; } = 0.3490f;  // +20 deg
 }
 
+/// <summary>
+/// Central coordination class that drives the simulation loop.
+/// Implements <see cref="IFrameTickable"/> so the renderer can
+/// invoke <c>Setup</c> and <c>UpdateFrame</c>. It also exposes
+/// simulation state to the renderer through <see cref="IRenderDataSource"/>
+/// and provides access to generated world data via
+/// <see cref="IWorldDataSource"/>. The orchestrator wires together player
+/// input, AI logic, physics and terrain generation.
+/// </summary>
 public class Orchestrator : IFrameTickable, IRenderDataSource, IWorldDataSource
 {
     private readonly IPlayerInput _playerInput;
@@ -57,6 +71,11 @@ public class Orchestrator : IFrameTickable, IRenderDataSource, IWorldDataSource
         _physicsService.CollisionDetected += OnCollision;
     }
 
+    /// <summary>
+    /// Initializes the world by generating terrain, registering the terrain
+    /// collider with the physics service and spawning both the player and AI
+    /// drone agents. This method is invoked once by the renderer at startup.
+    /// </summary>
     public void Setup()
     {
         _worldData = _terrainGenerator.Generate();
@@ -73,6 +92,11 @@ public class Orchestrator : IFrameTickable, IRenderDataSource, IWorldDataSource
         _allDrones.AddRange(aiAgents);
     }
 
+    /// <summary>
+    /// Executes one simulation tick. Handles user input, updates drone
+    /// control for both player and AI agents, steps the physics world and
+    /// refreshes debug drawing state. Called every frame by the renderer.
+    /// </summary>
     public void UpdateFrame(float deltaTime, IKeyboard? keyboard)
     {
         // 1. Poll Input
@@ -119,6 +143,10 @@ public class Orchestrator : IFrameTickable, IRenderDataSource, IWorldDataSource
         _debugDraw.Tick(deltaTime);
     }
 
+    /// <summary>
+    /// Processes player keyboard input and updates camera control state.
+    /// Called from <see cref="UpdateFrame"/> once per frame.
+    /// </summary>
     private void HandleInput(float deltaTime)
     {
         if (_playerInput.IsDebugTogglePressed()) _isDebugDrawingEnabled = !_isDebugDrawingEnabled;
@@ -143,6 +171,11 @@ public class Orchestrator : IFrameTickable, IRenderDataSource, IWorldDataSource
         // The "Possess" key is not implemented in V1
     }
 
+    /// <summary>
+    /// Responds to collision events reported by the physics service.
+    /// In the V1 implementation any collision marks the involved drone
+    /// as crashed and triggers a debug draw indicator.
+    /// </summary>
     private void OnCollision(CollisionEventData eventData)
     {
         // V1: Any collision is fatal. Find the agent and update its status.

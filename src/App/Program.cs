@@ -6,6 +6,7 @@ using DroneSim.DebugDraw;
 using DroneSim.FlightDynamics;
 using DroneSim.Physics;
 using DroneSim.PlayerInput;
+using DroneSim.Renderer;
 using DroneSim.TerrainGenerator;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -64,35 +65,8 @@ public static class Program
                 services.AddSingleton<IRenderer>(sp =>
                 {
                     var orchestrator = sp.GetRequiredService<Orchestrator>();
-                    // This is a placeholder for a real renderer
-                    return new ConsoleRenderer(orchestrator, orchestrator, orchestrator);
+                    var debugDraw = sp.GetRequiredService<IDebugDrawService>();
+                    return new V1SilkNetRenderer(orchestrator, orchestrator, debugDraw);
                 });
             });
-}
-
-// A minimal renderer to allow the application to run without a graphics engine.
-public class ConsoleRenderer : IRenderer
-{
-    private readonly IFrameTickable _tickable;
-    private readonly IRenderDataSource _dataSource;
-    private readonly IWorldDataSource _worldDataSource;
-
-    public ConsoleRenderer(IFrameTickable tickable, IRenderDataSource dataSource, IWorldDataSource worldDataSource)
-    {
-        _tickable = tickable;
-        _dataSource = dataSource;
-        _worldDataSource = worldDataSource;
-    }
-
-    public void Run()
-    {
-        _tickable.Setup();
-
-        // Placeholder for a real game loop
-        for (int i = 0; i < 100; i++)
-        {
-            _tickable.UpdateFrame(0.016f); // Simulate a 60 FPS frame rate
-            Console.WriteLine($"Frame {i}: HUD: {_dataSource.GetHudInfo()}");
-        }
-    }
 }

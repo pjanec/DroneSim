@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 using System.Numerics;
+using Silk.NET.Input;
 
 namespace DroneSim.App;
 
@@ -72,10 +73,13 @@ public class Orchestrator : IFrameTickable, IRenderDataSource, IWorldDataSource
         _allDrones.AddRange(aiAgents);
     }
 
-    public void UpdateFrame(float deltaTime)
+    public void UpdateFrame(float deltaTime, IKeyboard? keyboard)
     {
         // 1. Poll Input
-        _playerInput.Update(new object()); // In a real game, pass keyboard/gamepad state
+        if (keyboard != null)
+        {
+            _playerInput.Update(keyboard);
+        }
         HandleInput(deltaTime);
 
         // 2. Update AI and Player Drone Controls

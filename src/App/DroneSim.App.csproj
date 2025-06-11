@@ -8,6 +8,7 @@
     <ProjectReference Include="..\Modules\FlightDynamics\DroneSim.FlightDynamics.csproj" />
     <ProjectReference Include="..\Modules\PhysicsService\DroneSim.PhysicsService.csproj" />
     <ProjectReference Include="..\Modules\PlayerInput\DroneSim.PlayerInput.csproj" />
+    <ProjectReference Include="..\Modules\Renderer\DroneSim.Renderer.csproj" />
     <ProjectReference Include="..\Modules\TerrainGenerator\DroneSim.TerrainGenerator.csproj" />
   </ItemGroup>
 
@@ -27,6 +28,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Silk.NET.Input" Version="2.20.0" />
   </ItemGroup>
 
 </Project>

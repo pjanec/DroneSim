@@ -13,6 +13,7 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp.PixelFormats;
 using System.Runtime.CompilerServices;
+using Silk.NET.Input;
 
 namespace DroneSim.Renderer;
 
@@ -57,6 +58,7 @@ public class V1SilkNetRenderer : IRenderer, IDisposable
     private Font _hudFont;
 
     private bool _disposed = false;
+    private IInputContext? _inputContext;
 
     public V1SilkNetRenderer(IFrameTickable tickable, IRenderDataSource dataSource, IDebugDrawService debugDraw)
     {
@@ -67,12 +69,14 @@ public class V1SilkNetRenderer : IRenderer, IDisposable
 
         var fontCollection = new FontCollection();
         if (!fontCollection.TryGet("Arial", out var fontFamily))
-            if(!fontCollection.TryGet("Verdana", out fontFamily))
+            if (!fontCollection.TryGet("Verdana", out fontFamily))
                 fontFamily = SystemFonts.Families.FirstOrDefault();
 
         if (fontFamily == null) throw new InvalidOperationException("No suitable font found.");
         _hudFont = fontFamily.CreateFont(16, FontStyle.Regular);
     }
+
+    public IKeyboard? PrimaryKeyboard => _inputContext?.Keyboards.FirstOrDefault();
 
     public void Run()
     {
@@ -93,6 +97,7 @@ public class V1SilkNetRenderer : IRenderer, IDisposable
     private unsafe void OnLoad()
     {
         _gl = _window?.CreateOpenGL() ?? throw new InvalidOperationException("Could not create OpenGL context.");
+        _inputContext = _window?.CreateInput() ?? throw new InvalidOperationException("Could not create Input context.");
         _tickable.Setup();
 
         _sceneShaderProgram = CompileShaders(SceneVertexShader, SceneFragmentShader);
@@ -219,7 +224,7 @@ public class V1SilkNetRenderer : IRenderer, IDisposable
         _gl.TexImage2D(TextureTarget.Texture2D, 0, (int)InternalFormat.Rgba, (uint)width, (uint)height, 0, PixelFormat.Rgba, PixelType.UnsignedByte, null);
     }
     
-    private void OnUpdate(double deltaTime) => _tickable.UpdateFrame((float)deltaTime);
+    private void OnUpdate(double deltaTime) => _tickable.UpdateFrame((float)deltaTime, PrimaryKeyboard);
 
     private unsafe void OnRender(double deltaTime)
     {

@@ -7,6 +7,7 @@ using System.Numerics;
 using System.Drawing;
 using System.Collections.Generic;
 using System;
+using Silk.NET.Input;
 
 namespace DroneSim.Core
 {
@@ -131,11 +132,14 @@ namespace DroneSim.Core
     public interface ITerrainGenerator { WorldData Generate(); }
     public interface IAutopilotFactory { IAutopilot Create(); }
     public interface IAIDroneSpawner { List<DroneAgent> CreateDrones(int count, WorldData worldData); }
-    public interface IRenderer { void Run(); }
+    public interface IRenderer { 
+        void Run(); 
+        IKeyboard? PrimaryKeyboard { get; }
+    }
 
     public interface IPlayerInput
     {
-        void Update(object keyboardState);
+        void Update(IKeyboard keyboard);
         ControlInputs GetFlightControls();
         float GetCameraTiltInput();
         bool IsSwitchCameraPressed();
@@ -188,7 +192,7 @@ namespace DroneSim.Core
     public interface IFrameTickable
     {
         void Setup();
-        void UpdateFrame(float deltaTime);
+        void UpdateFrame(float deltaTime, IKeyboard? keyboard);
     }
 
     public interface IRenderDataSource

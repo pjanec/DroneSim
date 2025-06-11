@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Silk.NET.Input" Version="2.20.0" />
+  </ItemGroup>
+
 </Project>

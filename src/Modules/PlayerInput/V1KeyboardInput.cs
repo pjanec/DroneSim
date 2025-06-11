@@ -2,6 +2,7 @@ using DroneSim.Core;
 using Silk.NET.Input;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DroneSim.PlayerInput;
 
@@ -32,50 +33,50 @@ public class V1KeyboardInput : IPlayerInput
     /// <param name="keyboard">The keyboard object from the input provider.</param>
     public void Update(IKeyboard keyboard)
     {
+        if (keyboard == null) return;
+
+        var currentFrameKeys = new HashSet<Key>(keyboard.SupportedKeys.Where(k => keyboard.IsKeyPressed(k)));
+
         // --- Handle held keys for continuous input ---
-        _currentControls.StrafeInput = GetAxisInput(keyboard, Key.A, Key.D);
-        _currentControls.VerticalInput = GetAxisInput(keyboard, Key.Z, Key.Q);
-        _currentControls.YawInput = GetAxisInput(keyboard, Key.Left, Key.Right);
-        _cameraTiltInput = GetAxisInput(keyboard, Key.Down, Key.Up);
+        _currentControls.StrafeInput = GetAxisInput(currentFrameKeys, Key.A, Key.D);
+        _currentControls.VerticalInput = GetAxisInput(currentFrameKeys, Key.Z, Key.Q);
+        _currentControls.YawInput = GetAxisInput(currentFrameKeys, Key.Left, Key.Right);
+        _cameraTiltInput = GetAxisInput(currentFrameKeys, Key.Down, Key.Up);
 
         // --- Handle single-press keys for discrete actions ---
-        if (WasJustPressed(keyboard, Key.W)) _throttleStep = Math.Min(10, _throttleStep + 1);
-        if (WasJustPressed(keyboard, Key.S)) _throttleStep = Math.Max(0, _throttleStep - 1);
+        if (WasJustPressed(currentFrameKeys, Key.W)) _throttleStep = Math.Min(10, _throttleStep + 1);
+        if (WasJustPressed(currentFrameKeys, Key.S)) _throttleStep = Math.Max(0, _throttleStep - 1);
         _currentControls.ThrottleStep = _throttleStep;
 
-        _switchCameraPressed = WasJustPressed(keyboard, Key.C);
-        _switchDronePressed = WasJustPressed(keyboard, Key.T);
-        _possessKeyPressed = WasJustPressed(keyboard, Key.P);
-        _isDebugTogglePressed = WasJustPressed(keyboard, Key.F3);
+        _switchCameraPressed = WasJustPressed(currentFrameKeys, Key.C);
+        _switchDronePressed = WasJustPressed(currentFrameKeys, Key.T);
+        _possessKeyPressed = WasJustPressed(currentFrameKeys, Key.P);
+        _isDebugTogglePressed = WasJustPressed(currentFrameKeys, Key.F3);
 
         // --- Update previous keys state for the next frame ---
         _previousFrameKeys.Clear();
-        var allKeys = (Key[])Enum.GetValues(typeof(Key));
-        foreach (var key in allKeys)
+        foreach (var key in currentFrameKeys)
         {
-            if (keyboard.IsKeyPressed(key))
-            {
-                _previousFrameKeys.Add(key);
-            }
+            _previousFrameKeys.Add(key);
         }
     }
 
     /// <summary>
     /// Checks if a key was pressed in the current frame but not in the previous one.
     /// </summary>
-    private bool WasJustPressed(IKeyboard keyboard, Key key)
+    private bool WasJustPressed(HashSet<Key> currentKeys, Key key)
     {
-        return keyboard.IsKeyPressed(key) && !_previousFrameKeys.Contains(key);
+        return currentKeys.Contains(key) && !_previousFrameKeys.Contains(key);
     }
 
     /// <summary>
     /// Helper to get an axis value from two keys (e.g., -1.0 for left, 1.0 for right).
     /// </summary>
-    private float GetAxisInput(IKeyboard keyboard, Key negativeKey, Key positiveKey)
+    private float GetAxisInput(HashSet<Key> currentKeys, Key negativeKey, Key positiveKey)
     {
         float axis = 0;
-        if (keyboard.IsKeyPressed(positiveKey)) axis += 1.0f;
-        if (keyboard.IsKeyPressed(negativeKey)) axis -= 1.0f;
+        if (currentKeys.Contains(positiveKey)) axis += 1.0f;
+        if (currentKeys.Contains(negativeKey)) axis -= 1.0f;
         return axis;
     }
 
@@ -86,15 +87,4 @@ public class V1KeyboardInput : IPlayerInput
     public bool IsSwitchDronePressed() => _switchDronePressed;
     public bool IsPossessKeyPressed() => _possessKeyPressed;
     public bool IsDebugTogglePressed() => _isDebugTogglePressed;
-
-    /// <summary>
-    /// Explicit interface implementation to handle the generic object parameter from the core interface.
-    /// </summary>
-    void IPlayerInput.Update(object keyboardState)
-    {
-        if (keyboardState is IKeyboard keyboard)
-        {
-            Update(keyboard);
-        }
-    }
 } 

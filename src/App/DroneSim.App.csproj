@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\DroneSim.Core.csproj" />
+    <ProjectReference Include="..\Modules\TerrainGenerator\DroneSim.TerrainGenerator.csproj" />
+    <ProjectReference Include="..\Modules\PlayerInput\DroneSim.PlayerInput.csproj" />
+    <ProjectReference Include="..\Modules\FlightDynamics\DroneSim.FlightDynamics.csproj" />
+    <ProjectReference Include="..\Modules\PhysicsService\DroneSim.PhysicsService.csproj" />
+    <ProjectReference Include="..\Modules\Autopilot\DroneSim.Autopilot.csproj" />
+    <ProjectReference Include="..\Modules\AIDroneSpawner\DroneSim.AISpawner.csproj" />
+    <ProjectReference Include="..\Modules\Renderer\DroneSim.Renderer.csproj" />
+    <ProjectReference Include="..\Modules\DebugDrawService\DroneSim.DebugDraw.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

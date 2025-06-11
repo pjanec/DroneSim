@@ -201,4 +201,13 @@ namespace DroneSim.Core
         string GetHudInfo();
         bool IsDebugDrawingEnabled();
     }
+
+    /// <summary>
+    /// An extended data source interface for components that need access
+    /// to the static world data after it has been generated.
+    /// </summary>
+    public interface IWorldDataSource
+    {
+        WorldData GetWorldData();
+    }
 } 

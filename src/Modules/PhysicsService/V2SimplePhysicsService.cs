@@ -21,7 +21,7 @@ public class V2SimplePhysicsService : IPhysicsService
         public bool IsKinematic;
         public float Mass = 1.0f;
         public Vector3 Position;
-        public Quaternion Orientation;
+        public Quaternion Orientation = Quaternion.Identity;
         public Vector3 LinearVelocity;
         public Vector3 AngularVelocity = Vector3.Zero;
         public List<Vector3> ForcesThisFrame = new();

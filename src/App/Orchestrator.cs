@@ -63,7 +63,7 @@ public class Orchestrator : IFrameTickable, IRenderDataSource, IWorldDataSource
         _physicsService.AddStaticBody(_worldData.TerrainPhysicsBody);
 
         // Create player drone
-        var playerState = new DroneState { Id = 0, Position = new Vector3(0, 5, 0), Status = DroneStatus.Active };
+        var playerState = new DroneState { Id = 0, Position = new Vector3(0, 5, 0), Orientation=Quaternion.Identity, Status = DroneStatus.Active };
         int playerBodyHandle = _physicsService.AddKinematicBody(new { Shape = "Drone" });
         var playerAgent = new DroneAgent(playerBodyHandle, playerState, null!); // No autopilot for player
         _allDrones.Add(playerAgent);

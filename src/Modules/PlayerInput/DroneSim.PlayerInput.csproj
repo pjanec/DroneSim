@@ -4,6 +4,10 @@
     <ProjectReference Include="..\..\Core\DroneSim.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Silk.NET.Input" Version="2.22.0" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

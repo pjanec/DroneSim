@@ -1,36 +1,66 @@
 **Principles:**
 
+# Design first
+
 - **Prepare a thorough design using a full-fledged (web-based) AI model.**
-  - Clarify everything down to the smallest detail. Every later change is difficult.
-  - Ask what else the model needs clarified.
-  - Think about what we might be missing, as if we were implementing it ourselves.
-  - Have the model explain how the individual parts work together.
-  - Understand, assess suitability, and discuss the solution until we are fully satisfied.
-    - The model may suggest its own solutions, which may not suit us.
+  - **Go to details**
+    - Clarify everything down to the smallest detail. Every later change is difficult.
+    - Ask what else the model needs clarified.
+    - Think about what we might be missing, as if we were implementing it ourselves.
+  - **Stay in control**
+    - Have the model **explain how stuff work**, for example how the individual parts work together.
+      - *How XXX works?*
+      - *How do we  get the value of YYYY?*
+      - *Why ZZZZ is using AAA?*
+      - *What if we use AAA instead of BBB?*
+    - **Understand**, assess suitability, and discuss the solution until we are fully satisfied.
+    - **Ask for criticism of your ideas** and their suitability for the overall solution. Don't fall for model's flattery.
+      - *Be objective. Take a critical look and provide pros and cons of the ideas.*
+    - **Keep attention**, the model may push its own solutions which might not suit you.
 - **Have the model generate specifications.**
   - **Requirements** – what we are trying to achieve.
   - **Architecture** – how the solution will work in principle.
     - Modules, responsibilities
     - Dependencies, relationships, main operation sequences
     - etc.
-  - Detailed description of individual modules with well-commented code skeletons and unit test designs.
-  - *Write a detailed implementation guide. Include fully documented interfaces and classes skeletons with all important fields and methods. Comment their purpose, responsibility, relations and usage.*
-  - Proposal of integration tests.
-  - **Solution structure** – what projects will be included
-- **Create a project directory, insert documentation as Markdown.**
-- **Let Cursor implement the solution in smaller parts (not all at once).**
-  - Always feed it the basic specification, architecture, etc., so it has the context.
-- **Do not overwhelm the model with too much work at once.** The model has a short memory. After a while, it loses context and starts making mistakes.
-- **Proceed in smaller blocks.** For the next block, open a new chat.
-- **Prepare descriptions of the desired solution as Markdown documents**, and feed them to the model whenever we start a new chat.
-  - The better the guides and specifications, the fewer prompts are needed and the better the cost-efficiency of paid “requests.”
-- **Review what the model produces.** Even if it translates, it might not be exactly what we wanted.
-  - The model is lazy, it tends to postpone things.
+  - **Detailed description of individual modules** with well-commented code skeletons and unit test designs.
+  - **Proposal of integration tests**.
+  - **Solution structure** – what projects will be included in solution
+
+# Implement with Cursor
+
+Let the Cursor to implement according to your design
+
+- **Use Markdown docs **
+  - Add specs to project folder where you can easily drag&drop them to cursor's chat window
+  - The better the guides and specifications,
+    - the more chance you will get what you needed,
+    - the fewer prompts will be needed and less “requests” will be spent.
+- **Proceed in stages**
+  - **Break work to smaller parts.**
+    - Do not overwhelm the model with too much work at once, or in one long chat!
+    - The model has a short memory. After a while, it loses context and starts making mistakes.
+  - **Keep model informed.**
+    - For the next stage, open a new chat and feed the necessary docs to the model again.
+    - Always feed the basic specification, architecture etc., so model has the necessary context.
+- **Keep watching what the model produces**
+  - Even if code compiles, it might not be exactly what you wanted.
   - The later we discover a problem, the harder it is to fix.
 
+# Useful prompts
+
+* *Comment the code thoroughly. Do not change existing comments unless they are wrong.*
+  * Without this, you might not receive any code comments.
+  * Model likes to rephrase comments, which might remove important info you added by hand.
+* *Do just minimal necessary changes.*
+  * Model likes to refactor stuff that is not directly related to your task.
+  * Extremely important if adding features to an already existing codebase.
+* *Implement the feature in full, leave no unfinished parts.*
+  * The model is lazy, it tends to postpone more difficult implementation to later time, adding just some TODO comments instead.
 
 
-Prompts used:
+
+# Prompts used
 
 
 
@@ -115,8 +145,8 @@ make sure the the unit tests are passing - run them and fix the troubles.
 
 ------------------------------------------------------
 *** starting  a NEW CHAT to keep the AI model's state clear
-Model použil ConsoleRenderer a nedodal správnou obsluhu klávesnice.
-My chceme Silk.NET renderer a IKeyboard objekt z jeho okna.
+Model used ConsoleRenderer draft without keyboard handling.
+We wanted Silk.NET renderer its IKeyboard.
 ------------------------------------------------------
 @DroneSim Architecture v1.3.md @DroneSim Requirements v1.3.md 
 
@@ -127,9 +157,9 @@ use proper IKeyboard instance from the Silk.Net in void IPlayerInput.Update(obje
 you migh need to extend the interface to get the IKeyboard object from the renderer.
 
 ---------------------------------
-***  apka can be compiled and run
-*** drone flying, just turning left/right not functional
-*** needed to fix missing quaternion init to Identity (was all zeroes)
+*** App can be compiled and run.
+*** Drone flying, just turning left/right not functional
+*** Needed to fix missing quaternion init to Identity (was all zeroes)
 ------------------------------------
 ```
 

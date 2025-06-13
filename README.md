@@ -14,6 +14,7 @@
     - Dependencies, relationships, main operation sequences
     - etc.
   - Detailed description of individual modules with well-commented code skeletons and unit test designs.
+  - *Write a detailed implementation guide. Include fully documented interfaces and classes skeletons with all important fields and methods. Comment their purpose, responsibility, relations and usage.*
   - Proposal of integration tests.
   - **Solution structure** – what projects will be included
 - **Create a project directory, insert documentation as Markdown.**

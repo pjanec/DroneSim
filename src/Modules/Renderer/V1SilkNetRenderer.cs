@@ -77,7 +77,8 @@ public class V1SilkNetRenderer : IRenderer, IDisposable
         var fontCollection = new FontCollection();
         if (!fontCollection.TryGet("Arial", out var fontFamily))
             if (!fontCollection.TryGet("Verdana", out fontFamily))
-                fontFamily = SystemFonts.Families.FirstOrDefault();
+                //fontFamily = SystemFonts.Families.FirstOrDefault();
+                fontFamily = SystemFonts.Families.First( x=> x.Name == "Arial");
 
         if (fontFamily == null) throw new InvalidOperationException("No suitable font found.");
         _hudFont = fontFamily.CreateFont(16, FontStyle.Regular);
@@ -224,7 +225,13 @@ public class V1SilkNetRenderer : IRenderer, IDisposable
         _gl.BindVertexArray(_hudVao);
         _hudVbo = _gl.GenBuffer();
         _gl.BindBuffer(BufferTargetARB.ArrayBuffer, _hudVbo);
-        float[] quadVertices = { -1f,-1f,0f,0f,  1f,-1f,1f,0f,  1f,1f,1f,1f, -1f,1f,0f,1f };
+
+        // FIXED, vertically-flipped coordinates:
+        float[] quadVertices = { -1f,-1f,0f,1f,  // Bottom-left vertex, tex coord (0,1)
+                                  1f,-1f,1f,1f,  // Bottom-right vertex, tex coord (1,1)
+                                  1f,1f,1f,0f,  // Top-right vertex, tex coord (1,0)
+                                 -1f,1f,0f,0f }; // Top-left vertex, tex coord (0,0)
+
         _gl.BufferData(BufferTargetARB.ArrayBuffer, new ReadOnlySpan<float>(quadVertices), BufferUsageARB.StaticDraw);
         _gl.VertexAttribPointer(0, 2, VertexAttribPointerType.Float, false, 4 * sizeof(float), (void*)0);
         _gl.EnableVertexAttribArray(0);
@@ -373,7 +380,7 @@ public class V1SilkNetRenderer : IRenderer, IDisposable
             cameraTarget = dronePosition;
         }
 
-        var tiltRotation = Quaternion.CreateFromAxisAngle(Vector3.Transform(Vector3.UnitX, droneOrientation), -tilt * (MathF.PI / 180f));
+        var tiltRotation = Quaternion.CreateFromAxisAngle(Vector3.Transform(Vector3.UnitX, droneOrientation), -tilt );
         var finalUp = Vector3.Transform(up, tiltRotation);
 
         var viewMatrix = Matrix4x4.CreateLookAt(cameraPosition, cameraTarget, finalUp);
@@ -436,26 +443,32 @@ public class V1SilkNetRenderer : IRenderer, IDisposable
     {
         if (_gl == null || _hudImage == null) return;
 
-        string hudText = _dataSource.GetHudInfo();
-
-        _hudImage.Mutate(ctx => 
+        // FIXED: Re-create the image every frame to guarantee it's clear.
+        // This replaces the reliance on the Mutate/Fill operation.
+        using (var hudImage = new Image<Rgba32>(_window.Size.X, _window.Size.Y))
         {
-            ctx.Fill(Color.Transparent);
-            ctx.DrawText(hudText, _hudFont, Color.White, new PointF(10, 10));
-        });
-
-        _hudImage.ProcessPixelRows(accessor =>
-        {
-            for (int y = 0; y < accessor.Height; y++)
+            string hudText = _dataSource.GetHudInfo(); // 
+        
+            hudImage.Mutate(ctx =>
             {
-                var row = accessor.GetRowSpan(y);
-                fixed (void* p = row)
+                // The Fill call is now redundant as the image is new, but it's harmless.
+                ctx.Fill(Color.Transparent);
+                ctx.DrawText(hudText, _hudFont, Color.White, new PointF(10, 10)); // 
+            });
+
+            hudImage.ProcessPixelRows(accessor =>
+            {
+                for (int y = 0; y < accessor.Height; y++)
                 {
-                    _gl.BindTexture(TextureTarget.Texture2D, _hudTexture);
-                    _gl.TexSubImage2D(TextureTarget.Texture2D, 0, 0, y, (uint)accessor.Width, 1, PixelFormat.Rgba, PixelType.UnsignedByte, p);
+                    var row = accessor.GetRowSpan(y);
+                    fixed (void* p = row)
+                    {
+                        _gl.BindTexture(TextureTarget.Texture2D, _hudTexture);
+                        _gl.TexSubImage2D(TextureTarget.Texture2D, 0, 0, y, (uint)accessor.Width, 1, PixelFormat.Rgba, PixelType.UnsignedByte, p); // 
+                    }
                 }
-            }
-        });
+            });
+        }
         
         _gl.Disable(EnableCap.DepthTest);
         _gl.UseProgram(_hudShaderProgram);

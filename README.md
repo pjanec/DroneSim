@@ -77,6 +77,37 @@ Let the Cursor to implement according to your design
   * Either copy/paste files manually
   * Or **Export** each file as **google document**, convert it to **markdown** and pass it to Cursor to implement it.
 
+s
+
+# Refactor/bugfix/extend with Gemini
+
+Gemini is excellent at analyzing existing code and helping you with any change you need.
+
+* Bug fixing
+  * Gemini can follow the execution path and find deep and subtle bugs and provide exact solution. The more info you provide (bug description, logs, console prints etc.), the more precise results you will get.
+* Implementing new features
+  * Gemini understands you code and suggest best way of implementing of what you need.
+
+Process:
+
+* Give web Gemini relevant part of you code
+  * Using a script, concatenate all your source code files to one big TXT file and drag it to the chat prompt.
+  * Add clear separators in between individual files, specifying the file path and name
+
+```
+-----------------------------------------------------------------------------
+-------------------- File: ConfigEditor\Dom\ArrayNode.cs --------------------
+-----------------------------------------------------------------------------
+```
+
+* Ask Gemini to analyze given source code and explain what you want to do
+  * Find a bug - explain the bug, provide logs
+  * Describe new feature/modification request
+  * Ask about how it works etc.
+* Put suggested changes to yout project
+  * Copy/paste the suggested fixed to your project manually,
+  * Or export the replies to google docs, copy to clipboard as markdown and pass it to Cursor to implement
+
 
 
 # Prompts used

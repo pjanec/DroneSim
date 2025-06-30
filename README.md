@@ -60,6 +60,25 @@ Let the Cursor to implement according to your design
 
 
 
+# Alternative - Implement with web Gemini
+
+* Ask Gemini to **generate files one by one**, each to a separate canvas, letting **you review each one** before it generates next. 
+  * Tell Gemini to make the files:
+    * Well documented
+    * Complete, leaving no placeholders, back-references or unimplemented parts
+    * Perfectly matching your original code (if you are doing a modification  of already existing sources)
+  * Before accepting, check each file if it contains what you expect, ask questions until you are happy
+* Ask Gemini for a **gap analysis** between the generated code and the design documents generated earlier. 
+  * Or if you are modifying existing code, the feature gap analysis between original code and the newly generated one.
+* Ask Gemini for **pre-mortem bug analysis**
+  * Often reveals logical, performance or user-unfriendliness bugs
+* Let Gemini to **update the generated files (in its canvas)** with bug fixes. Repeat until you are happy with th eresults.
+* Place the generated file to your project
+  * Either copy/paste files manually
+  * Or **Export** each file as **google document**, convert it to **markdown** and pass it to Cursor to implement it.
+
+
+
 # Prompts used
 
 

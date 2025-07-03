@@ -40,6 +40,10 @@ public class Orchestrator : IFrameTickable, IRenderDataSource, IWorldDataSource
     private readonly ITerrainGenerator _terrainGenerator;
     private readonly IAIDroneSpawner _aiSpawner;
     private readonly OrchestratorOptions _options;
+    private readonly Random _random = new();
+    private float _aiWorldBoundary = 128.0f;
+    private float _aiFlightAltitude = 20.0f;
+    private float _aiArrivalRadius = 5.0f;
 
     private List<DroneAgent> _allDrones = new();
     private WorldData? _worldData;
@@ -90,6 +94,31 @@ public class Orchestrator : IFrameTickable, IRenderDataSource, IWorldDataSource
         // Create AI drones
         var aiAgents = _aiSpawner.CreateDrones(_options.AIDroneCount, _worldData);
         _allDrones.AddRange(aiAgents);
+
+        // Get AI config for randomization
+        if (_aiSpawner is DroneSim.AISpawner.V1AIDroneSpawner spawner)
+        {
+            var optsObj = spawner.GetType().GetProperty("_options", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(spawner);
+            if (optsObj is DroneSim.AISpawner.SpawnerOptions opts)
+            {
+                _aiWorldBoundary = opts.WorldBoundary;
+                _aiFlightAltitude = opts.InitialFlightAltitude;
+            }
+            else
+            {
+                _aiWorldBoundary = 128.0f;
+                _aiFlightAltitude = 20.0f;
+            }
+        }
+        // Try to get arrival radius from any AI agent's autopilot
+        var aiAutopilot = aiAgents.FirstOrDefault()?.AutopilotController;
+        if (aiAutopilot != null)
+        {
+            var autopilotType = aiAutopilot.GetType();
+            var optionsField = autopilotType.GetField("_options", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (optionsField?.GetValue(aiAutopilot) is DroneSim.Autopilot.AIBehaviorOptions aiOpts)
+                _aiArrivalRadius = aiOpts.ArrivalRadius;
+        }
     }
 
     /// <summary>
@@ -106,6 +135,24 @@ public class Orchestrator : IFrameTickable, IRenderDataSource, IWorldDataSource
         foreach (var agent in _allDrones)
         {
             if (agent.State.Status == DroneStatus.Crashed) continue;
+
+            if (agent.State.Id != _playerControlledDroneId && agent.AutopilotController != null)
+            {
+                // Check if AI drone has reached its target
+                var autopilotType = agent.AutopilotController.GetType();
+                var targetField = autopilotType.GetField("_targetPosition", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                if (targetField != null)
+                {
+                    var target = (Vector3)targetField.GetValue(agent.AutopilotController)!;
+                    var pos = agent.State.Position;
+                    var horizontalDistSq = (target.X - pos.X) * (target.X - pos.X) + (target.Z - pos.Z) * (target.Z - pos.Z);
+                    if (horizontalDistSq < _aiArrivalRadius * _aiArrivalRadius)
+                    {
+                        var newTarget = GetRandomPositionOnPlane();
+                        agent.AutopilotController.SetTarget(newTarget);
+                    }
+                }
+            }
 
             ControlInputs inputs;
             if (agent.State.Id == _playerControlledDroneId)
@@ -181,6 +228,13 @@ public class Orchestrator : IFrameTickable, IRenderDataSource, IWorldDataSource
             agent.State = agent.State with { Status = DroneStatus.Crashed };
             _debugDraw.DrawCollisionPoint(eventData.Position, 1f, System.Drawing.Color.Red, 5f);
         }
+    }
+
+    private Vector3 GetRandomPositionOnPlane()
+    {
+        float x = (float)(_random.NextDouble() * 2 - 1) * _aiWorldBoundary;
+        float z = (float)(_random.NextDouble() * 2 - 1) * _aiWorldBoundary;
+        return new Vector3(x, _aiFlightAltitude, z);
     }
 
     // --- IRenderDataSource & IWorldDataSource Implementation ---

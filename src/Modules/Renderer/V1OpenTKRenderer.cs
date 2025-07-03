@@ -153,14 +153,27 @@ void main()
             if (pressed) _pressed.Add(key);
             else _pressed.Remove(key);
         }
-        public bool Forward => _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.W) || _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Up);
-        public bool Backward => _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.S) || _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Down);
-        public bool Left => _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.A) || _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Left);
-        public bool Right => _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.D) || _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Right);
-        public bool Up => _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Space);
-        public bool Down => _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.LeftShift) || _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.RightShift);
-        public bool YawLeft => _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Q);
-        public bool YawRight => _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.E);
+        // Key mapping for OpenTKDroneSimInput:
+        //   W: Forward (Throttle)
+        //   S: Backward (Throttle zero)
+        //   Q: Strafe left
+        //   E: Strafe right
+        //   A / Left Arrow: Yaw left
+        //   D / Right Arrow: Yaw right
+        //   Up Arrow: Up
+        //   Down Arrow: Down
+        public bool Forward => _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.W);
+        public bool Backward => _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.S);
+        public bool StrafeLeft => _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Q);
+        public bool StrafeRight => _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.E);
+        public bool YawLeft => _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.A) || _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Left);
+        public bool YawRight => _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.D) || _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Right);
+        public bool Up => _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Up);
+        public bool Down => _pressed.Contains(OpenTK.Windowing.GraphicsLibraryFramework.Keys.Down);
+        [Obsolete("Use StrafeLeft/StrafeRight instead.")]
+        public bool Left => false;
+        [Obsolete("Use StrafeLeft/StrafeRight instead.")]
+        public bool Right => false;
     }
     private OpenTKDroneSimInput _input = new();
 

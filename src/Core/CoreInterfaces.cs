@@ -232,5 +232,7 @@ namespace DroneSim.Core
         bool YawLeft { get; }
         bool YawRight { get; }
         // Add more as needed
+        bool StrafeLeft { get; }
+        bool StrafeRight { get; }
     }
 } 

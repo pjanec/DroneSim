@@ -208,10 +208,6 @@ void main()
         _debugViewLocation = GL.GetUniformLocation(_debugShaderProgram, "uView");
         _debugProjectionLocation = GL.GetUniformLocation(_debugShaderProgram, "uProjection");
 
-        if (_worldDataSource?.GetWorldData()?.TerrainRenderMesh is not null)
-        {
-            SetupTerrain(_worldDataSource.GetWorldData().TerrainRenderMesh);
-        }
         SetupDroneModel();
         SetupDebug();
         SetupHud();
@@ -222,6 +218,12 @@ void main()
         GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
         _tickable.Setup();
+        
+        // Setup terrain after the orchestrator has generated the world data
+        if (_worldDataSource?.GetWorldData()?.TerrainRenderMesh is not null)
+        {
+            SetupTerrain(_worldDataSource.GetWorldData().TerrainRenderMesh);
+        }
     }
 
     private void OnUpdateFrame(FrameEventArgs args)
@@ -450,8 +452,22 @@ void main()
         GL.UniformMatrix4(_sceneViewLocation, false, ref viewMat);
         GL.UniformMatrix4(_sceneProjectionLocation, false, ref projMat);
         GL.UniformMatrix4(_sceneModelLocation, false, ref modelMat);
+        
+        // Set wireframe color to a visible gray
+        int colorLocation = GL.GetUniformLocation(_sceneShaderProgram, "uOverrideColor");
+        GL.Uniform3(colorLocation, 0.5f, 0.5f, 0.5f);
+        
         GL.BindVertexArray(_terrainVao);
+        
+        // Enable wireframe mode
+        GL.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Line);
+        
+        // Draw terrain as wireframe
         GL.DrawElements(PrimitiveType.Triangles, _terrainIndexCount, DrawElementsType.UnsignedInt, 0);
+        
+        // Disable wireframe mode
+        GL.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Fill);
+        
         GL.BindVertexArray(0);
     }
 

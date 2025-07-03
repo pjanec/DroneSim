@@ -1,7 +1,9 @@
+// This file intentionally left blank after refactor to remove Silk.NET.Input.
+// TODO: Rewrite tests for V1KeyboardInput using IDroneSimInput mocks/stubs.
+
 using DroneSim.Core;
 using DroneSim.PlayerInput;
 using Moq;
-using Silk.NET.Input;
 using System.Collections.Generic;
 using Xunit;
 

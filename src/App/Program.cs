@@ -77,7 +77,7 @@ public static class Program
                 {
                     var orchestrator = sp.GetRequiredService<Orchestrator>();
                     var debugDraw = sp.GetRequiredService<IDebugDrawService>();
-                    return new V1SilkNetRenderer(orchestrator, orchestrator, debugDraw);
+                    return new V1OpenTKRenderer(orchestrator, orchestrator, debugDraw);
                 });
             });
 }

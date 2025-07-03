@@ -97,13 +97,9 @@ public class Orchestrator : IFrameTickable, IRenderDataSource, IWorldDataSource
     /// control for both player and AI agents, steps the physics world and
     /// refreshes debug drawing state. Called every frame by the renderer.
     /// </summary>
-    public void UpdateFrame(float deltaTime, IKeyboard? keyboard)
+    public void UpdateFrame(float deltaTime, IDroneSimInput? input)
     {
-        // 1. Poll Input
-        if (keyboard != null)
-        {
-            _playerInput.Update(keyboard);
-        }
+        _playerInput.Update(input);
         HandleInput(deltaTime);
 
         // 2. Update AI and Player Drone Controls

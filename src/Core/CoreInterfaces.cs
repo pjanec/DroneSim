@@ -7,7 +7,6 @@ using System.Numerics;
 using System.Drawing;
 using System.Collections.Generic;
 using System;
-using Silk.NET.Input;
 
 namespace DroneSim.Core
 {
@@ -132,14 +131,13 @@ namespace DroneSim.Core
     public interface ITerrainGenerator { WorldData Generate(); }
     public interface IAutopilotFactory { IAutopilot Create(); }
     public interface IAIDroneSpawner { List<DroneAgent> CreateDrones(int count, WorldData worldData); }
-    public interface IRenderer { 
-        void Run(); 
-        IKeyboard? PrimaryKeyboard { get; }
+    public interface IRenderer {
+        void Run();
     }
 
     public interface IPlayerInput
     {
-        void Update(IKeyboard keyboard);
+        void Update(IDroneSimInput input);
         ControlInputs GetFlightControls();
         float GetCameraTiltInput();
         bool IsSwitchCameraPressed();
@@ -192,7 +190,7 @@ namespace DroneSim.Core
     public interface IFrameTickable
     {
         void Setup();
-        void UpdateFrame(float deltaTime, IKeyboard? keyboard);
+        void UpdateFrame(float deltaTime, IDroneSimInput? input);
     }
 
     public interface IRenderDataSource
@@ -221,5 +219,18 @@ namespace DroneSim.Core
         /// Returns the immutable world data generated at startup.
         /// </summary>
         WorldData GetWorldData();
+    }
+
+    public interface IDroneSimInput
+    {
+        bool Forward { get; }
+        bool Backward { get; }
+        bool Left { get; }
+        bool Right { get; }
+        bool Up { get; }
+        bool Down { get; }
+        bool YawLeft { get; }
+        bool YawRight { get; }
+        // Add more as needed
     }
 } 

@@ -102,7 +102,29 @@ Let the Cursor to implement according to your design
 
 
 
-# Gemini as a code generator
+# Gemini as implementation guide generator
+
+* Ask Gemini to break the planned features into **stages**
+  * *Write implementation plan with manageable stages, allowing for testing the features at the end of each stage.*
+* Now proceed stage by stage. Ask Gemini to prepare implementation guide for each stage, with tests
+  * *Generate an implementation guide for stage 1 to a new canvas. Include specific testing and verification steps at the end.*
+* Tell Cursor to follow the implementation guide.
+  * *Follow the guide below. Do not do anything else. At the end, do not run the app, just build it and fix the errrors.*
+* Test the features, follow the tests as proposed.
+* As the guide is not complete to details and Gemini is not perfect, the features might not work immediately.
+  * Open new fresh Gemini chat dedicated to fixing the bug, giving it the current sources as a big TXT file.
+  * Tell gemini what was implemented, describe the error, refer to what testing step failed, be as specific as possible.
+    * *In [source.TXT] I implemented the following: [markdown text of the implementation guide]*
+      *Test case 2 failed: [detailed and specific description of how it failed]*
+  * Gemini will analyze the problem and suggests a solution.
+  * Make suggested changes (you can use Cursor if they are large)
+  * Re-test and give Gemini an updated test report. Repeat until fixed.
+  * You can now close the bug-fixing chat
+* Return to the implemention guide chat, inform about the new state of the code, ask for implementation guide for next stage based on your newest sources.
+  * Generate new snapshot of the sources, drag drop to chat
+  * *This [source2.TXT] implements the Stage 1. Pls check if it complies with your intentions. If so, please take it as a new baseline and generate the implementation guide for next planned stage.*
+
+# Gemini as a  file-by-file code generator
 
 * Ask Gemini to **generate files one by one**, each to a separate canvas, letting **you review each one** before it generates next. 
   * Tell Gemini to make the files:

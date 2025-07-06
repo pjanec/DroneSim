@@ -60,7 +60,49 @@ Let the Cursor to implement according to your design
 
 
 
-# Alternative - Implement with web Gemini
+# Using Gemini with Cursor
+
+**Gemini** is great for **strategic** stuff of large code bases
+
+* Discussing new features or large refactors.
+* Creating implementation guides that matches you source code.
+
+**Cursor** is great for **tactical** stuff within a smaller context
+
+* Implementing ideas sketched by gemini
+* Fixing little bugs and inconsistencies that might be left in Gemini's instructions
+
+**Process**
+
+* **Give web Gemini relevant part of you code**
+  * Using a script, concatenate all your source code files to one big TXT file and drag it to the chat prompt.
+  * Add clear separators in between individual files, specifying the file path and name
+
+```
+-----------------------------------------------------------------------------
+-------------------- File: ConfigEditor\Dom\ArrayNode.cs --------------------
+-----------------------------------------------------------------------------
+```
+
+* **Ask Gemini to analyze given source** code and explain what you want to do
+
+  * Find a bug - explain the bug, provide logs
+  * Describe new feature/modification request
+  * Ask about how it works etc.
+
+* **Discuss/tailor the problem** with Gemini until you like the solution
+
+* **Ask Gemini to write an implementation guide**
+  * "Pls write a detailed implementation guide for feature XXX. Use well commented code."
+* **Put suggested changes to your project**
+  * Export the implementation guide to google docs
+  * Copy to clipboard as markdown
+  * Pass it to Cursor to implement.
+    * *Please follow the guide below. Do not change anything else."*
+
+
+
+# Gemini as a code generator
 
 * Ask Gemini to **generate files one by one**, each to a separate canvas, letting **you review each one** before it generates next. 
   * Tell Gemini to make the files:
@@ -77,36 +119,32 @@ Let the Cursor to implement according to your design
   * Either copy/paste files manually
   * Or **Export** each file as **google document**, convert it to **markdown** and pass it to Cursor to implement it.
 
-s
 
-# Refactor/bugfix/extend with Gemini
 
-Gemini is excellent at analyzing existing code and helping you with any change you need.
+# Bugfixing complex code with Gemini
 
-* Bug fixing
-  * Gemini can follow the execution path and find deep and subtle bugs and provide exact solution. The more info you provide (bug description, logs, console prints etc.), the more precise results you will get.
-* Implementing new features
-  * Gemini understands you code and suggest best way of implementing of what you need.
+Gemini is excellent at analyzing big existing code base and helping you to pinpoint the cause of the bug
 
-Process:
+* Gemini can
+  * Follow the execution path to the deepest levels.
+  * Find subtle bugs/race conditions
+  * Provide exact solution.
 
-* Give web Gemini relevant part of you code
-  * Using a script, concatenate all your source code files to one big TXT file and drag it to the chat prompt.
-  * Add clear separators in between individual files, specifying the file path and name
+* The more info you provide (bug description, logs, console prints etc.), the more precise results you will get.
+  * Without the extra info the model just guesses what could be happening. Logs tell the model what is actually happening in your code.
 
-```
------------------------------------------------------------------------------
--------------------- File: ConfigEditor\Dom\ArrayNode.cs --------------------
------------------------------------------------------------------------------
-```
 
-* Ask Gemini to analyze given source code and explain what you want to do
-  * Find a bug - explain the bug, provide logs
-  * Describe new feature/modification request
-  * Ask about how it works etc.
-* Put suggested changes to yout project
-  * Copy/paste the suggested fixed to your project manually,
-  * Or export the replies to google docs, copy to clipboard as markdown and pass it to Cursor to implement
+
+
+# Known Issues
+
+* AI struggles with changing very long monolithic code (1000+ lines)
+  * Solution: **Refactor first to smaller modules** with clear separation of concerns
+* AI likes to refactor other stuff you didn't tell it to do
+  * Changing/removing comments
+  * Changing variable names
+  * etc.
+  * Solution: Add **"Do not change anything else."** to your prompt.
 
 
 
